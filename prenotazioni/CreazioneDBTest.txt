@@ -1,0 +1,63 @@
+/***CreazioneDB
+*/
+
+
+create table Utente(
+    userName varchar(20) primary key,
+    passwordUtente varchar(20) not null,
+    ruoloUtente int not null
+);
+create table Docente(
+    professorName varchar(20) primary key
+);
+create table Corso(
+    courseName varchar(20) primary key
+);
+create table AssociazioneCorsoDocente(
+    docenteACD varchar(20),
+    corsoACD varchar(20),
+    constraint PK_AssociazioneCorsoDocente primary key (docenteACD, corsoACD),
+    constraint FK_docenteACD foreign key (docenteACD) references Docente(professorName) ON DELETE CASCADE ON UPDATE CASCADE,
+    constraint FK_corsoACD foreign key (corsoACD) references Corso(courseName) ON DELETE CASCADE ON UPDATE CASCADE
+);
+create table Prenotazione(
+    	idPrenotazione int AUTO_INCREMENT PRIMARY KEY,
+	utenteP varchar(20),
+	docenteP varchar(20),
+	corsoP varchar(20),
+	giornoRipetizione varchar(20),
+	slotRipetizione int,
+	statoRipetizione int,
+	constraint FK_utenteP foreign key (utenteP) references Utente(userName) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+
+/***ValorizzazioneDB
+*/
+INSERT INTO Utente VALUES("Andrea","pswAndrea",1);
+INSERT INTO Utente VALUES("Manuel","pswManuel",0);
+INSERT INTO Utente VALUES("Alessio","pswAlessio",0);
+
+
+
+
+
+
+/* --------------------------------------------------------------*/
+INSERT INTO Docente VALUES("Ardissono");
+INSERT INTO Docente VALUES("Roversi");
+INSERT INTO Corso VALUES("Prog1");
+INSERT INTO Corso VALUES("Tweb");
+INSERT INTO Corso VALUES("Prog4");
+
+INSERT INTO AssociazioneCorsoDocente VALUES("Ardissono","Tweb");
+INSERT INTO AssociazioneCorsoDocente VALUES("Roversi","Prog1");
+INSERT INTO AssociazioneCorsoDocente VALUES("Roversi","Prog4");
+INSERT INTO AssociazioneCorsoDocente VALUES("Ardissono","Prog1");
+
+INSERT INTO Prenotazione(utenteP,docenteP,corsoP,giornoRipetizione,slotRipetizione,statoRipetizione) VALUES ("Manuel","Roversi","Prog4","LUN",1,1);
+INSERT INTO Prenotazione(utenteP,docenteP,corsoP,giornoRipetizione,slotRipetizione,statoRipetizione) VALUES ("Andrea","Roversi","Prog1","LUN",1,1);
+INSERT INTO Prenotazione(utenteP,docenteP,corsoP,giornoRipetizione,slotRipetizione,statoRipetizione) VALUES ("Andrea","Roversi","Prog1","LUN",2,1);
+INSERT INTO Prenotazione(utenteP,docenteP,corsoP,giornoRipetizione,slotRipetizione,statoRipetizione) VALUES ("Andrea","Roversi","Prog1","LUN",3,2);
+INSERT INTO Prenotazione(utenteP,docenteP,corsoP,giornoRipetizione,slotRipetizione,statoRipetizione) VALUES ("Andrea","Roversi","Prog1","MAR",1,3);
+

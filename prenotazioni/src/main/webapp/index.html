@@ -1,0 +1,1101 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:v-on="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="UTF-8">
+  <title>prenotazioniMattone</title>
+  <link href="style.css" rel="stylesheet" type="text/css">
+</head>
+
+
+<body>
+
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+
+    <div id="mainDiv">
+
+
+        <!--LOGIN-->
+        <div id="authentication">
+            <div v-if="loginContainerVisualize" id="login-container">
+                <input v-model="userName" type="text" placeholder="Username">
+                <input v-model="password" type="text" placeholder="Password">
+                <button v-on:click="loginPost">Login</button>
+            </div>
+            <div v-if="logoutContainerVisualize" id="logout-container1">
+                <p>   Logged: {{ userName }} <!--with psw: {{password}}--> as {{ ruoloUtente }}</p>
+            </div>
+            <div v-if="logoutContainerVisualize1" id="logout-container11">
+                <p>   Error during login...</p>
+            </div>
+            <div v-if="logoutContainerVisualize" id="logout-container2">
+                <button v-on:click="logoutPost">Logout</button>
+            </div>
+        </div>
+
+        <!--MAIN SPACE-->
+        <div id="workspace">
+
+            <!--LEFT SIDE-->
+            <div id="leftWorkspace">
+                <p id="blank1"> </p>
+                <button v-on:click="leftVisualizzaPrenUsr" v-if="boolBtnUsr" class="btndraw-border" id="lftWBtnVisualizzaPren">Visualizza mie prenotazioni</button>
+                <button v-on:click="leftEffettuaPren" v-if="boolBtnGuest" class="btndraw-border" id="lftWBtnEffettuaPren">Effettua prenotazione</button>
+
+                <p v-if="boolBtnAdm">Admin control panel</p>
+                <button v-on:click="leftVisualizzaAllPren" v-if="boolBtnAdm" class="btndraw-border" id="lftWBtnAdmVisualizzaAllPren">Visualizza le prenotazioni di tutti gli utenti</button>
+
+                <button v-on:click="leftInsCorso" v-if="boolBtnAdm" class="btndraw-border" id="lftWBtnAdmInsCorso">Inserisci Corso</button>
+                <button v-on:click="leftInsDocente" v-if="boolBtnAdm" class="btndraw-border" id="lftWBtnAdmInsDocente">Inserisci Docente</button>
+                <button v-on:click="leftInsACD" v-if="boolBtnAdm" class="btndraw-border" id="lftWBtnAdmInsACD">Inserisci Associazione Corso-Docente</button>
+
+                <button v-on:click="leftRmvCorso" v-if="boolBtnAdm" class="btndraw-border" id="lftWBtnAdmRmvCorso">Rimuovi Corso</button>
+                <button v-on:click="leftRmvDocente" v-if="boolBtnAdm" class="btndraw-border" id="lftWBtnAdmRmvDocente">Rimuovi Docente</button>
+                <button v-on:click="leftRmvACD" v-if="boolBtnAdm" class="btndraw-border" id="lftWBtnAdmRmvACD">Rimuovi Associazione Corso-Docente</button>
+            </div>
+
+            <!--RIGHT SIDE-->
+            <div id="rightWorkspace">
+
+                <!--Are usr,admin-->
+                <!--Visualizza prenotazioni personali-->
+                <div id="visualizzaPrenotazioniPersonali" v-if="boolVisualizzaPrenotazioniPersonali">
+                    <p class="titleRightClass">Prenotazioni personali</p>
+                    <p class="littleTitleRightClass">Prenotazioni attualmente attive</p>
+                    <ul>
+                    <li v-for="pA in prenotazioniAttiveList"> Codice prenotazione [{{pA.idPrenotazione}}] Relativa al corso "{{ pA.corsoP }}" con il docente "{{ pA.docenteP }}" del giorno "{{ pA.giornoRipetizione }}" nel seguente slot "{{ pA.slotRipetizione }}"</li>
+                    </ul>
+
+                    <br>
+                    <p>Segna una prenotazione come effettuata</p>
+                    <select id="selectionSegnaPrenComeEffettuata">
+                        <option v-for="pEff in prenotazioniAttiveList">{{ pEff.idPrenotazione }}</option>
+                    </select>
+                    <button v-on:click="postSegnaPrenComeEffettuata">EFFETTUATA</button>
+                    <p>Disdici una prenotazione</p>
+                    <select id="selectionDisdiciPren">
+                        <option v-for="pDis in prenotazioniAttiveList">{{ pDis.idPrenotazione }}</option>
+                    </select>
+                    <button v-on:click="postDisdiciPren">DISDICI</button>
+                    <p> {{ info }}</p>
+
+
+
+                    <br><br>
+                    <p  class="littleTitleRightClass">Storico</p>
+                    <p>Prenotazioni effettuate</p>
+
+                    <ul>
+                    <li v-for="pE in prenotazioniEffettuateList">Prenotazione: {{ pE.corsoP }} con il docente: {{ pE.docenteP }} del giorno {{ pE.giornoRipetizione }} nel seguente slot: {{ pE.slotRipetizione }}</li>
+                    </ul>
+
+                    <br>
+                    <p>Prenotazioni disdette</p>
+                    <ul>
+                    <li v-for="pD in prenotazioniDisdetteList">Prenotazione: {{ pD.corsoP }} con il docente: {{ pD.docenteP }} del giorno {{ pD.giornoRipetizione }} nel seguente slot: {{ pD.slotRipetizione }}</li>
+                    </ul>
+                </div>
+
+                <!--Area guest, user, admin-->
+                <!--effettua prenotazioni-->
+                <div id="EffettuazionePrenotazioni" v-if="boolEffettuazionePrenotazioni">
+                    <p class="titleRightClass">Effettua una prenotazione</p>
+                    <p  class="littleTitleRightClass">Scegli il corso ed il docente con cui desideri fare la tua ripetizione</p>
+                    <select id="selectionACDforPrenotazione">
+                        <option v-for="selezioneACD in myACDList">{{ selezioneACD.corsoACD }} - {{ selezioneACD.docenteACD }}</option>
+                    </select>
+
+                    <button v-on:click="choosedACDforPrenotazione">OK</button>
+
+
+                    <div v-if="boolChoosedACDforPrenotazione">
+                        <p class="littleTitleRightClass">Stai prenotando per {{ staiPrenotandoPerInfo }}</p>
+                        <table>
+                        <tr>  <td>   </td>  <td class="tblTitl">15-16</td>  <td class="tblTitl">16-17</td>   <td class="tblTitl">17-18</td>   <td class="tblTitl">18-19</td>  </tr>
+                        <tr>  <td class="tblTitl">LUN</td>  <td> <input type="checkbox" id="idlun1" v-if="lun1"> </td>  <td> <input type="checkbox" id="idlun2" v-if="lun2"> </td>   <td> <input type="checkbox" id="idlun3" v-if="lun3"> </td>   <td> <input type="checkbox" id="idlun4" v-if="lun4"> </td>  </tr>
+                        <tr>  <td class="tblTitl">MAR</td>  <td> <input type="checkbox" id="idmar1" v-if="mar1"> </td>  <td> <input type="checkbox" id="idmar2" v-if="mar2"> </td>   <td> <input type="checkbox" id="idmar3" v-if="mar3"> </td>   <td> <input type="checkbox" id="idmar4" v-if="mar4"> </td>  </tr>
+                        <tr>  <td class="tblTitl">MER</td>  <td> <input type="checkbox" id="idmer1" v-if="mer1"> </td>  <td> <input type="checkbox" id="idmer2" v-if="mer2"> </td>   <td> <input type="checkbox" id="idmer3" v-if="mer3"> </td>   <td> <input type="checkbox" id="idmer4" v-if="mer4"> </td>  </tr>
+                        <tr>  <td class="tblTitl">GIO</td>  <td> <input type="checkbox" id="idgio1" v-if="gio1"> </td>  <td> <input type="checkbox" id="idgio2" v-if="gio2"> </td>   <td> <input type="checkbox" id="idgio3" v-if="gio3"> </td>   <td> <input type="checkbox" id="idgio4" v-if="gio4"> </td>  </tr>
+                        <tr>  <td class="tblTitl">VEN</td>  <td> <input type="checkbox" id="idven1" v-if="ven1"> </td>  <td> <input type="checkbox" id="idven2" v-if="ven2"> </td>   <td> <input type="checkbox" id="idven3" v-if="ven3"> </td>   <td> <input type="checkbox" id="idven4" v-if="ven4"> </td>  </tr>
+                        </table>
+
+                        <button v-on:click="commitEffettuaPrenotazioni" v-if="boolBtnAdm || boolBtnUsr">PRENOTA</button>
+                        <p> {{ info }}</p>
+                    </div>
+
+
+                </div>
+
+
+                <!--Area admin only-->
+                <!--Visualizza prenotazioni di tutti-->
+                <div id="visualizzaPrenotazioniTutti" v-if="boolVisualizzaPrenotazioniTutti">
+                    <p class="titleRightClass">Prenotazioni di tutti gli utenti</p>
+                    <p  class="littleTitleRightClass">Prenotazioni attualmente attive</p>
+                    <ul>
+                    <li v-for="pA in prenotazioniAttiveList"> UTENTE: {{ pA.utenteP }}    prenotazione: {{ pA.corsoP }} con il docente: {{ pA.docenteP }} del giorno {{ pA.giornoRipetizione }} nel seguente slot: {{ pA.slotRipetizione }}</li>
+                    </ul>
+                    <br><br>
+                    <p  class="littleTitleRightClass">Storico</p>
+                    <p>Prenotazioni effettuate</p>
+                    <ul>
+                    <li v-for="pE in prenotazioniEffettuateList">UTENTE: {{ pE.utenteP }}    prenotazione: {{ pE.corsoP }} con il docente: {{ pE.docenteP }} del giorno {{ pE.giornoRipetizione }} nel seguente slot: {{ pE.slotRipetizione }}</li>
+                    </ul>
+                    <br>
+                    <p>Prenotazioni disdette</p>
+                    <ul>
+                    <li v-for="pD in prenotazioniDisdetteList">UTENTE: {{ pD.utenteP }}    prenotazione: {{ pD.corsoP }} con il docente: {{ pD.docenteP }} del giorno {{ pD.giornoRipetizione }} nel seguente slot: {{ pD.slotRipetizione }}</li>
+                    </ul>
+                </div>
+
+                <!--Inserimento corsi-->
+                <div id="InserimentoCorsi" v-if="boolPostInsCorso">
+                    <p class="titleRightClass">Inserimento Corso</p>
+                    <p>Inserisci il titolo del corso: <input v-model="varPostTitoloCorso" type="text" placeholder="Titolo Corso"></p>
+                    <button v-on:click="postInsCorso">Inserisci Corso</button>
+                    <p> {{ info }}</p>
+                </div>
+
+                <!--Inserimento docenti-->
+                <div id="InserimentoDocenti" v-if="boolPostInsDocente">
+                    <p class="titleRightClass">Inserimento Docente</p>
+                    <p>Inserisci il nome del Docente: <input v-model="varPostNomeDocente" type="text" placeholder="Nome Docente"></p>
+                    <button v-on:click="postInsDocente">Inserisci Docente</button>
+                    <p> {{ info }}</p>
+                </div>
+
+                <!--Inserimento Acd-->
+                <div id="InserimentoACD" v-if="boolPostInsACD">
+                    <p class="titleRightClass">Inserimento Associazione Corso-Docente</p>
+                    <p class="littleTitleRightClass">Scegli il docente</p>
+                        <select id="selectioninsACDforDocente">
+                            <option v-for="selezioneDocente in myDocentiList">{{ selezioneDocente.professorName }}</option>
+                        </select>
+                    <p class="littleTitleRightClass">e abbinalo con il seguente corso</p>
+                        <select id="selectioninsACDforCorso">
+                            <option v-for="selezioneCorso in myCorsiList">{{ selezioneCorso.courseName }}</option>
+                        </select>
+                    <button v-on:click="postInsACD">Inserisci Associazione Corso-Docente</button>
+                    <p> {{ info }}</p>
+                </div>
+
+                <!--Rimozione di un corso-->
+                <div id="rimozioneCorso" v-if="boolPostRmvCorso">
+                    <p class="titleRightClass">Rimozione corso</p>
+                    <p class="littleTitleRightClass">Scegli il corso da rimuovere</p>
+
+                    <select id="selectionrmvCorso">
+                        <option v-for="selezioneCorso in myCorsiList">{{ selezioneCorso.courseName }}</option>
+                    </select>
+                    <button v-on:click="postRmvCorso">Rimuovi il corso selezionato</button>
+                    <p> {{ info }}</p>
+                </div>
+
+                <!--Rimozione di un docente-->
+                <div id="rimozioneDocente" v-if="boolPostRmvDocente">
+                    <p class="titleRightClass">Rimozione docente</p>
+                    <p class="littleTitleRightClass">Scegli il docente da rimuovere</p>
+
+                    <select id="selectionrmvDocente">
+                        <option v-for="selezioneDocente in myDocentiList">{{ selezioneDocente.professorName }}</option>
+                    </select>
+                    <button v-on:click="postRmvDocente">Rimuovi il docente selezionato</button>
+                    <p> {{ info }}</p>
+                </div>
+
+                <!--Rimozione di una associazione corso docente-->
+                <div id="rimozioneACD" v-if="boolPostRmvACD">
+                    <p class="titleRightClass">Rimozione Associazione Corso-Docente</p>
+                    <p class="littleTitleRightClass">Scegli l'associazione corso-docente da eliminare</p>
+
+                    <select id="selectionRmvACD">
+                        <option v-for="selezioneACD in myACDList">{{ selezioneACD.docenteACD }} - {{ selezioneACD.corsoACD }}</option>
+                    </select>
+
+                    <button v-on:click="postRmvACD">Rimuovi Associazione Corso-Docente</button>
+                    <p> {{ info }}</p>
+                </div>
+
+
+
+            </div>
+        </div>
+
+        <!--Footer-->
+        <div id="footer">
+            <p>Progetto IUM-TWEB Andrea Mattone 2020/2021</p>
+        </div>
+
+
+    </div>
+
+
+    <!--Login script-->
+    <script>
+        new Vue ({
+            el: '#mainDiv',
+            data: {
+
+                sessionID:'noSession',
+
+                /*Variabili per la topBar ed il login/logout*/
+                userName: '',
+                password: '',
+                ruoloUtente: 'guest',
+                loginContainerVisualize:true,
+                logoutContainerVisualize:false,
+                logoutContainerVisualize1:false,
+
+                /*Condizioni di visualizzazione dei bottoni del left side in base al ruolo dell'utente*/
+                boolBtnUsr:false,
+                boolBtnGuest:true,
+                boolBtnAdm:false,
+
+
+
+                /*[INSERISCI CORSO]*/
+                boolPostInsCorso:false,     /*condizione di visualizzazione del div di inserimento corso*/
+                varPostTitoloCorso:'',      /*text area in cui scrivo il titolo del corso*/
+
+                /*[INSERISCI DOCENTE]*/
+                boolPostInsDocente:false,   /*condizione di visualizzazione del div di inserimento docente*/
+                varPostNomeDocente:'',      /*text area in cui scrivo il nome del docente*/
+
+                /*[ISNERISCI ASSOCIAZIONE CORSO DOCENTE]*/
+                boolPostInsACD:false,       /*condizione di visualizzazione del div di inserimento ACD*/
+                myDocentiList: [],          /*Lista contenente i docenti*/
+                myCorsiList: [],            /*Lista contenente i corsi*/
+                selezioneDocente:'',        /*selezione del singolo docente*/
+                selezioneCorso:'',          /*selezione del singolo corso*/
+
+                /*[RIMUOVI UN CORSO]*/
+                boolPostRmvCorso:false,     /*Condizione di visualizzazione del div di rimozione corsi*/
+
+                /*[RIMUOVI UN DOCENTE]*/
+                boolPostRmvDocente:false,   /*Condizione di visualizzazione del div di rimozione docente*/
+
+                /*[RIMUOVI UNA ACD]*/
+                boolPostRmvACD:false,       /*Condizione di visualizzazione del div di rimozione ACD*/
+                myACDList: [],              /*Lista contenente le ACD*/
+                selezioneACD:'',            /*selezione della singola ACD*/
+
+
+                /*[EFFETTUA PRENOTAZIONI]*/
+                boolEffettuazionePrenotazioni:false,
+                boolChoosedACDforPrenotazione:false,
+                /*true libera, false prenotata*/
+                lun1:true,lun2:true,lun3:true,lun4:true,
+                mar1:true,mar2:true,mar3:true,mar4:true,
+                mer1:true,mer2:true,mer3:true,mer4:true,
+                gio1:true,gio2:true,gio3:true,gio4:true,
+                ven1:true,ven2:true,ven3:true,ven4:true,
+                actualPrenotazioniList:[],
+                selezionePrenotazione:'',
+                staiPrenotandoPerInfo:'',
+
+
+                /*[VISUALIZZA PRENOTAZIONI PERSONALI e VISUALIZZA PRENOTAZIONI DI TUTTI]*/
+                boolVisualizzaPrenotazioniPersonali:'', /*Condizione di visualizzazione del div di visualizzazione delle proprie prenotazioni*/
+                boolVisualizzaPrenotazioniTutti:'',     /*Condizione di visualizzazione del div di visualizzazione delle prenotazioni di tutti*/
+                prenotazioniAttiveList:[],
+                prenotazioniEffettuateList:[],
+                prenotazioniDisdetteList:[],
+                elemPrenotazioniAttive:'',
+                elemPrenotazioniEffettuate:'',
+                elemPrenotazioniDisdette:'',
+
+
+                info:'',
+                link: '/prenotazioni/Servlet'
+            },
+            methods:{
+
+                /*Login and logout*/
+                loginPost:function(){
+                    var self = this;
+                    $.post(this.link, {action: 'postLogin', userName: this.userName, password: this.password}, function(data) {
+                        self.ruoloUtente = data;
+
+                        if(self.ruoloUtente === "admin"){
+                            self.logoutContainerVisualize=true;
+                            self.loginContainerVisualize=false;
+                            self.logoutContainerVisualize1=false;
+
+                            self.boolBtnUsr=true;
+                            self.boolBtnAdm=true;
+                            self.getSession();
+
+                        }else if(self.ruoloUtente === "user"){
+                            self.logoutContainerVisualize=true;
+                            self.loginContainerVisualize=false;
+                            self.logoutContainerVisualize1=false;
+
+                            self.boolBtnUsr=true;
+                            self.getSession();
+                        }else{
+                            self.logoutContainerVisualize1=true;
+                        }
+                    });
+
+
+
+                    },
+                logoutPost:function(){
+                    var self = this;
+                    $.post(this.link, {action: 'postLogout', sessionID: self.sessionID}, function(data) {
+                        self.userName='';
+                        self.password='';
+                        self.sessionID='noSession';
+                        self.ruoloUtente='guest';
+                        self.info='';
+                        self.loginContainerVisualize=true;
+                        self.logoutContainerVisualize=false;
+                        self.logoutContainerVisualize1=false;
+
+                        self.boolBtnUsr=false;
+                        self.boolBtnAdm=false;
+
+                        //self.boolEffettuazionePrenotazioni=false;
+                        //self.boolChoosedACDforPrenotazione=false;
+                        self.boolVisualizzaPrenotazioniPersonali=false;
+                        self.boolPostInsCorso=false;
+                        self.boolPostInsDocente=false;
+                        self.boolPostInsACD=false;
+                        self.boolPostRmvCorso=false;
+                        self.boolPostRmvDocente=false;
+                        self.boolPostRmvACD=false;
+                        self.boolVisualizzaPrenotazioniTutti=false;
+
+                    });
+                },
+                /*Usata solo in appoggio durante il loginPost*/
+                getSession:function(){
+                    var self = this;
+                    $.get(this.link, {action: 'getSessionIDs'}, function(data) {
+
+                        self.sessionID=data;
+                    });
+                },
+
+
+
+                /**LEFT SIDE button handlers*/
+                /**Handler Btn "Visualizza mie prenotazioni*/
+                leftVisualizzaPrenUsr:function(){
+                    var self = this;
+                    self.info='';
+                    /*Nascondo tutti i div nella parte destra e mostro solo quello desiderato*/
+                    self.boolPostInsCorso=false;
+                    self.boolPostInsDocente=false;
+                    self.boolPostInsACD=false;
+                    self.boolPostRmvCorso=false;
+                    self.boolPostRmvDocente=false;
+                    self.boolPostRmvACD=false;
+                    self.boolChoosedACDforPrenotazione=false;
+                    self.boolEffettuazionePrenotazioni=false;
+                    self.boolVisualizzaPrenotazioniTutti=false;
+
+
+                    $.post(this.link,{action: 'getPrenotazioniUtenteAttive', sessionID: self.sessionID},function(data){
+                        if(data==="sessionFail"){
+                            self.boolVisualizzaPrenotazioniPersonali=false;
+                        }else{
+                            self.boolVisualizzaPrenotazioniPersonali=true;
+                            self.prenotazioniAttiveList=data;
+                        }
+
+                    });
+                    $.post(this.link,{action: 'getPrenotazioniUtenteEffettuate', sessionID: self.sessionID},function(data){
+                        if(data==="sessionFail"){
+                            self.boolVisualizzaPrenotazioniPersonali=false;
+                        }else{
+                            self.boolVisualizzaPrenotazioniPersonali=true;
+                            self.prenotazioniEffettuateList=data;
+                        }
+
+                    });
+                    $.post(this.link,{action: 'getPrenotazioniUtenteDisdette', sessionID: self.sessionID},function(data){
+                        if(data==="sessionFail"){
+                            self.boolVisualizzaPrenotazioniPersonali=false;
+                            alert("Sessione scaduta, effettua nuovamente il Login");
+                        }else{
+                            self.boolVisualizzaPrenotazioniPersonali=true;
+                            self.prenotazioniDisdetteList=data;
+                        }
+
+                    });
+
+                },
+                /**Handler Btn "Effettua prenotazione"*/
+                leftEffettuaPren:function(){
+                    var self = this;
+                    self.info='';
+                    /*Nascondo tutti i div nella parte destra e mostro solo quello desiderato*/
+                    self.boolPostInsCorso=false;
+                    self.boolPostInsDocente=false;
+                    self.boolPostInsACD=false;
+                    self.boolPostRmvCorso=false;
+                    self.boolPostRmvDocente=false;
+                    self.boolPostRmvACD=false;
+                    self.boolChoosedACDforPrenotazione=false;
+                    self.boolVisualizzaPrenotazioniPersonali=false;
+                    self.boolVisualizzaPrenotazioniTutti=false;
+                    /*self.lun1=0;self.lun2=0;self.lun3=0;self.lun4=0;
+                    self.mar1=0;self.mar2=0;self.mar3=0;self.mar4=0;
+                    self.mer1=0;self.mer2=0;self.mer3=0;self.mer4=0;
+                    self.gio1=0;self.gio2=0;self.gio3=0;self.gio4=0;
+                    self.ven1=0;self.ven2=0;self.ven3=0;self.ven4=0;*/
+                    /*Valorizzo il menu a discesa con le varie associazioni corso docente disponibili
+                    * nel DB così che l'utente possa scegliere quale corso e con quale docente effettuare
+                    * la ripetizione*/
+                    $.get(this.link,{action: 'getACDGuest'},function(data){
+                        self.myACDList=data;
+                    });
+                    /*Visualizzo il div relativo alle prenotazioni (la parte in alto di scelta della ACD)*/
+                    self.boolEffettuazionePrenotazioni=true;
+
+                },
+                /**Handler Btn "Visualizza TUTTE le prenotazioni"*/
+                leftVisualizzaAllPren:function(){
+                    var self = this;
+                    self.info='';
+                    /*Nascondo tutti i div nella parte destra e mostro solo quello desiderato*/
+                    self.boolPostInsDocente=false;
+                    self.boolPostInsACD=false;
+                    self.boolPostRmvCorso=false;
+                    self.boolPostRmvDocente=false;
+                    self.boolPostRmvACD=false;
+                    self.boolEffettuazionePrenotazioni=false;
+                    self.boolChoosedACDforPrenotazione=false;
+                    self.boolVisualizzaPrenotazioniPersonali=false;
+                    self.boolVisualizzaPrenotazioniTutti=false;
+                    self.boolPostInsCorso=false;
+
+                    /*Valorizzo le liste delle prenotazioni attive/effettuate/disdette, divise per stato della
+                    * prenotazione così da mostrarle in 3 zone diverse l'una dall'altra*/
+                    $.post(this.link,{action: 'getPrenotazioniTuttiAttive', sessionID: self.sessionID},function(data){
+                        if(data==="sessionFail"){
+                            self.boolVisualizzaPrenotazioniTutti=false;
+                        }else{
+                            self.boolVisualizzaPrenotazioniTutti=true;
+                            self.prenotazioniAttiveList=data;
+                        }
+
+                    });
+                    $.post(this.link,{action: 'getPrenotazioniTuttiEffettuate', sessionID: self.sessionID},function(data){
+                        if(data==="sessionFail"){
+                            self.boolVisualizzaPrenotazioniTutti=false;
+                        }else{
+                            self.boolVisualizzaPrenotazioniTutti=true;
+                            self.prenotazioniEffettuateList=data;
+                        }
+
+                    });
+                    $.post(this.link,{action: 'getPrenotazioniTuttiDisdette', sessionID: self.sessionID},function(data){
+                        if(data==="sessionFail"){
+                            self.boolVisualizzaPrenotazioniTutti=false;
+                            alert("Sessione scaduta, effettua nuovamente il Login");
+                        }else{
+                            self.boolVisualizzaPrenotazioniTutti=true;
+                            self.prenotazioniDisdetteList=data;
+                        }
+
+                    });
+                    /*mostro il div relativo alla visualizzazione di tutte le prenotazioni*/
+
+                },
+                /**Handler Btn "Inserisci corso"*/
+                leftInsCorso:function(){
+                    var self = this;
+                    self.info='';
+                    /*Nascondo tutti i div nella parte destra e mostro solo quello desiderato*/
+                    self.boolPostInsDocente=false;
+                    self.boolPostInsACD=false;
+                    self.boolPostRmvCorso=false;
+                    self.boolPostRmvDocente=false;
+                    self.boolPostRmvACD=false;
+                    self.boolEffettuazionePrenotazioni=false;
+                    self.boolChoosedACDforPrenotazione=false;
+                    self.boolVisualizzaPrenotazioniPersonali=false;
+                    self.boolVisualizzaPrenotazioniTutti=false;
+
+                    $.get(this.link,{action: 'checkSession', sessionID: self.sessionID},function(data){
+                        if(data==="ok"){
+                            /*Visualizzo il div relativo all'inserimento dei corsi*/
+                            self.boolPostInsCorso=true;
+                        }else{
+                            alert("Sessione scaduta, effettua nuovamente il Login");
+                        }
+                    });
+
+                },
+                /**Handler Btn "Inserisci docente"*/
+                leftInsDocente:function(){
+                    var self = this;
+                    self.info='';
+                    /*Nascondo tutti i div nella parte destra e mostro solo quello desiderato*/
+                    self.boolPostInsCorso=false;
+                    self.boolPostInsACD=false;
+                    self.boolPostRmvCorso=false;
+                    self.boolPostRmvDocente=false;
+                    self.boolPostRmvACD=false;
+                    self.boolEffettuazionePrenotazioni=false;
+                    self.boolChoosedACDforPrenotazione=false;
+                    self.boolVisualizzaPrenotazioniPersonali=false;
+                    self.boolVisualizzaPrenotazioniTutti=false;
+
+                    $.get(this.link,{action: 'checkSession', sessionID: self.sessionID},function(data){
+                        if(data==="ok"){
+                            /*Visualizzo il div relativo all'inserimento dei docenti*/
+                            self.boolPostInsDocente=true;
+                        }else{
+                            alert("Sessione scaduta, effettua nuovamente il Login");
+                        }
+                    });
+
+                },
+                /**Handler Btn "Inserisci ACD"*/
+                leftInsACD:function(){
+                    var self = this;
+                    self.info='';
+                    /*Nascondo tutti i div nella parte destra e mostro solo quello desiderato*/
+                    self.boolPostInsDocente=false;
+                    self.boolPostInsCorso=false;
+                    self.boolPostRmvCorso=false;
+                    self.boolPostRmvDocente=false;
+                    self.boolPostRmvACD=false;
+                    self.boolEffettuazionePrenotazioni=false;
+                    self.boolChoosedACDforPrenotazione=false;
+                    self.boolVisualizzaPrenotazioniPersonali=false;
+                    self.boolVisualizzaPrenotazioniTutti=false;
+
+
+                    /*Valorizzo le liste di docenti e corsi con i corsi e i docenti attualmente disponibili
+                    * cosi da poter scegliere di fare una associazione*/
+                    $.get(this.link,{action: 'getDocenti', sessionID: self.sessionID},function(data){
+                        if(data==="sessionFail"){
+                            self.boolPostInsACD=false;
+                        }else{
+                            self.myDocentiList=data;
+                            /*Visualizzo il div relativo all inserimento di una nuova ACD*/
+                            self.boolPostInsACD=true;
+                        }
+                    });
+                    $.get(this.link,{action: 'getCorsi', sessionID: self.sessionID},function(data){
+                        if(data==="sessionFail"){
+                            self.boolPostInsACD=false;
+                            alert("Sessione scaduta, effettuare nuovamente il Login");
+                        }else{
+                            self.myCorsiList=data;
+                            /*Visualizzo il div relativo all inserimento di una nuova ACD*/
+                            self.boolPostInsACD=true;
+                        }
+                    });
+
+
+
+                },
+                /**Handler Btn "Rimuovi corso"*/
+                leftRmvCorso:function (){
+                    var self = this;
+                    self.info='';
+                    /*Nascondo tutti i div nella parte destra e mostro solo quello desiderato*/
+                    self.boolPostInsDocente=false;
+                    self.boolPostInsCorso=false;
+                    self.boolPostInsACD=false;
+                    self.boolPostRmvDocente=false;
+                    self.boolPostRmvACD=false;
+                    self.boolEffettuazionePrenotazioni=false;
+                    self.boolChoosedACDforPrenotazione=false;
+                    self.boolVisualizzaPrenotazioniPersonali=false;
+                    self.boolVisualizzaPrenotazioniTutti=false;
+
+
+                    /*Valorizzo la lista dei corsi disponibili cosi da poter scegliere quale eliminare*/
+                    $.get(this.link,{action: 'getCorsi', sessionID : self.sessionID},function(data){
+                        if(data==="sessionFail"){
+                            self.boolPostRmvCorso=false;
+                            alert("Sessione scaduta, effettua nuovamente il Login.");
+                        }else{
+                            self.myCorsiList=data;
+                            /*Visualizzo il div relativo all'eliminazione di un corso*/
+                            self.boolPostRmvCorso=true;
+                        }
+
+                    });
+
+
+
+                },
+                /**Handler Btn "Rimuovi docente"*/
+                leftRmvDocente:function (){
+                    var self = this;
+                    self.info='';
+                    /*Nascondo tutti i div nella parte destra e mostro solo quello desiderato*/
+                    self.boolPostInsDocente=false;
+                    self.boolPostInsCorso=false;
+                    self.boolPostInsACD=false;
+                    self.boolPostRmvCorso=false;
+                    self.boolPostRmvACD=false;
+                    self.boolEffettuazionePrenotazioni=false;
+                    self.boolChoosedACDforPrenotazione=false;
+                    self.boolVisualizzaPrenotazioniPersonali=false;
+                    self.boolVisualizzaPrenotazioniTutti=false;
+
+                    /*Valorizzo la lista di docenti in modo che contenga i docenti attualmente presenti cosi da poter
+                    * scegliere quale eliminare*/
+                    $.get(this.link,{action: 'getDocenti', sessionID: self.sessionID},function(data){
+
+                        if(data==="sessionFail"){
+                            self.boolPostRmvDocente=false;
+                            alert("Sessione scaduta, effettua nuovamente il Login.");
+                        }else{
+                            self.myDocentiList=data;
+                            /*Visualizzo il div relativo all'eliminazione di un docente*/
+                            self.boolPostRmvDocente=true;
+                        }
+
+
+                    });
+
+
+
+                },
+                /**Handler Btn "Rimuovi ACD"*/
+                leftRmvACD:function (){
+                    var self = this;
+                    self.info='';
+                    /*Nascondo tutti i div nella parte destra e mostro solo quello desiderato*/
+                    self.boolPostInsDocente=false;
+                    self.boolPostInsCorso=false;
+                    self.boolPostInsACD=false;
+                    self.boolPostRmvCorso=false;
+                    self.boolPostRmvDocente=false;
+                    self.boolEffettuazionePrenotazioni=false;
+                    self.boolChoosedACDforPrenotazione=false;
+                    self.boolVisualizzaPrenotazioniPersonali=false;
+                    self.boolVisualizzaPrenotazioniTutti=false;
+
+                    /*Valorizzo la lista delle ACD disponibili cosi da scegliere quella che voglio eliminare*/
+                    $.get(this.link,{action: 'getACD',sessionID: self.sessionID},function(data){
+
+                        if(data==="sessionFail"){
+                            self.boolPostRmvACD=false;
+                            alert("Sessione scaduta, effettua nuovamente il Login.");
+                        }else{
+                            self.myACDList=data;
+                            /*Visualizzo il div relativo alla rimozione della ACD*/
+                            self.boolPostRmvACD=true;
+                        }
+
+                    });
+
+
+                },
+
+
+
+                /**RIGHT SIDE handlers*/
+                /**Handler Btn "Inserisci il corso indicato"*/
+                postInsCorso:function(){
+                    var self = this;
+                    /*Recupero il corso indicato (il valore è in varPostTitoloCorso) e lo
+                    * mando alla servlet per l'inserimento, in data ci sarà il messaggio di conferma dell'avvenuto inserimento
+                    * oppure il messaggio di errore*/
+                    $.post(this.link, {action: 'postCorso', titoloCorso : self.varPostTitoloCorso, sessionID: self.sessionID}, function(data) {
+                        if(data==="sessionFail"){
+                            alert("Sessione scaduta, effettua nuovamente il Login");
+                        }else{
+                            self.info=data;
+                        }
+                    });
+                },
+                /**Handler Btn "Inserisci il docente indicato"*/
+                postInsDocente:function(){
+                    var self = this;
+                    /*Recupero il docente indicato (il valore è in varPostNomeDocente) e lo
+                    * mando alla servlet per l'inserimento', in data ci sarà il messaggio di conferma dell'avvenuto inserimento
+                    * oppure il messaggio di errore*/
+                    $.post(this.link, {action: 'postDocente', nomeDocente : self.varPostNomeDocente, sessionID: self.sessionID}, function(data) {
+                        if(data==="sessionFail"){
+                            alert("Sessione scaduta, effettua nuovamente il Login");
+                        }else{
+                            self.info=data;
+                        }
+                    });
+                },
+                /**Handler Btn "Inserisci la ACD selezionata"*/
+                postInsACD:function(){
+                    var self = this;
+                    /*Recupero i valori selezionati nel menu a discesa che è stato precedentemente valorizzato con le
+                    * i docenti e i corsi presenti sul DataBase*/
+                    var e = document.getElementById("selectioninsACDforDocente");
+                    var strDocenteSelezionato = e.value;
+                    var e1 = document.getElementById("selectioninsACDforCorso");
+                    var strCorsoSelezionato = e1.value;
+
+                    if(strDocenteSelezionato==='' || strCorsoSelezionato===''){
+
+                    }else{
+                        /*Prendo i valori che ho indicato dei due menu a tendina di corso e docente e li mando alla servlet per l'inserimento
+                    * del nuovo ACD, in data è presente un messaggio di avvenuto inserimento della ACD oppure un messaggio di errore*/
+                        $.post(this.link, {action: 'postACD', nomeDocente : strDocenteSelezionato, nomeCorso : strCorsoSelezionato, sessionID : self.sessionID}, function(data) {
+                            if(data==="sessionFail"){
+                                alert("Sessione scaduta, effettua nuovamente il Login");
+                            }else{
+                                self.info=data;
+                            }
+                        });
+                    }
+
+
+
+                },
+                /**Handler Btn "Rimuovi il corso selezionato"*/
+                postRmvCorso:function(){
+                    var self = this;
+                    /*Recupero i valori selezionati nel menu a discesa, precedentemente valorizzati con i corsi
+                    * presenti nel DB*/
+                    var e = document.getElementById("selectionrmvCorso");
+                    var strCorsoDaRim = e.value;
+
+                    if(strCorsoDaRim===''){
+
+                    }else{
+                        /*Mando il valore alla servlet con il nome del corso da eliminare, in data è presente un messaggio
+                        * di avvenuta eliminazione oppure un messaggio di errore*/
+                        $.post(this.link, {action: 'postRmvCorso', nomeCorso : strCorsoDaRim, sessionID: self.sessionID}, function(data) {
+                            if(data==="sessionFail"){
+                                alert("Sessione scaduta, effettua nuovamente il Login");
+                            }else{
+                                self.info=data;
+                            }
+
+                        });
+                    }
+
+
+                },
+                /**Handler Btn "Rimuovi il docente selezionato"*/
+                postRmvDocente:function(){
+                    var self = this;
+                    /*Recupero i valori selezionati nel menu a discesa, precedentemente valorizzato con i valori dei
+                    * docenti presenti sul DataBase*/
+                    var e = document.getElementById("selectionrmvDocente");
+                    var strDocenteDaRim = e.value;
+
+                    if(strDocenteDaRim===''){
+
+                    }else{
+                        /*Mando alla servlet il nome del docente da eliminare, in data sarà presente il messaggio di avvenuta
+                        * eliminazione oppure un messaggio di errore*/
+                        $.post(this.link, {action: 'postRmvDocente', nomeDocente : strDocenteDaRim, sessionID: self.sessionID}, function(data) {
+                            if(data==="sessionFail"){
+                                alert("Sessione scaduta, effettua nuovamente il Login");
+                            }else{
+                                self.info=data;
+                            }
+                        });
+                    }
+
+                },
+                /**Handler Btn "Rimuovi la ACD selezionata"*/
+                postRmvACD:function(){
+                    var self = this;
+                    /*Recupero i valori selezionati nel menu a discesa, precedentemente valorizzato con le ACD presenti
+                    * sul DataBase*/
+                    var e = document.getElementById("selectionRmvACD");
+                    var strACDDaRim = e.value;
+
+                    if(strACDDaRim===''){
+
+                    }else{
+                        /*Mando alla servlet il nome della ACD da eliminare, in data ci sarà il messaggio di avvenuta eliminazione
+                     * della ACD oppure un messaggio di errore*/
+                        $.post(this.link, {action: 'postRmvACD', nomeACD : strACDDaRim, sessionID: self.sessionID}, function(data) {
+                            if(data==="sessionFail"){
+                                alert("Sessione scaduta, effettua nuovamente il Login");
+                            }else{
+                                self.info=data;
+                            }
+                        });
+                    }
+
+
+                },
+                /**Handler dei bottoni della prenotazione"*/
+                /**Handler Btn "Scegli il corso e il docente con cui fare la prenotazione"*/
+                choosedACDforPrenotazione:function(){
+                    var self = this;
+                    self.info='';
+                    self.staiPrenotandoPerInfo='';
+                    /*Formatto tutte le checkbox in modo che siano a true, ovvero visibili*/
+                    self.lun1=true;self.lun2=true;self.lun3=true;self.lun4=true;
+                    self.mar1=true;self.mar2=true;self.mar3=true;self.mar4=true;
+                    self.mer1=true;self.mer2=true;self.mer3=true;self.mer4=true;
+                    self.gio1=true;self.gio2=true;self.gio3=true;self.gio4=true;
+                    self.ven1=true;self.ven2=true;self.ven3=true;self.ven4=true;
+                    /*Scelgo di quale corso-docente vorrò vedere i posti disponibili per la prenotazione, tramite
+                    * il menu a tendina nella view*/
+                    var e = document.getElementById("selectionACDforPrenotazione");
+                    var ACDperPrenotazione = e.value;
+                    self.staiPrenotandoPerInfo = ACDperPrenotazione;
+
+                    if(ACDperPrenotazione===''){
+                        ACDperPrenotazione="null";
+                    }
+                    /*Mando alla servlet la ACD scelta cosi da poter ricevere in "data" l'elenco dei posti che sono
+                    * gia occupati per le prenotazioni di quel Corso-Docente*/
+                    $.get(this.link,{action: 'getPrenotazioni',ACDperPrenotazione : ACDperPrenotazione},function(data){
+
+                        if(data==="error"){
+                            self.boolChoosedACDforPrenotazione=false;
+                        }else{
+                            const obj = data;
+
+                            var counter = 0;
+                            var limit = obj.length;
+                            /*Non visualizzo le caselle che sono gia prenotate*/
+                            while(counter<limit){
+                                var giornoRip = obj[counter].giornoRipetizione;
+                                var slotRip = obj[counter].slotRipetizione;
+                                switch(giornoRip){
+                                    case "LUN":
+                                        switch (slotRip){
+                                            case 1:
+                                                self.lun1=false;
+                                                break;
+                                            case 2:
+                                                self.lun2=false;
+                                                break;
+                                            case 3:
+                                                self.lun3=false;
+                                                break;
+                                            case 4:
+                                                self.lun4=false;
+                                                break;
+                                        }
+                                        break;
+                                    case "MAR":
+                                        switch (slotRip){
+                                            case 1:
+                                                self.mar1=false;
+                                                break;
+                                            case 2:
+                                                self.mar2=false;
+                                                break;
+                                            case 3:
+                                                self.mar3=false;
+                                                break;
+                                            case 4:
+                                                self.mar4=false;
+                                                break;
+                                        }
+                                        break;
+                                    case "MER":
+                                        switch (slotRip){
+                                            case 1:
+                                                self.mer1=false;
+                                                break;
+                                            case 2:
+                                                self.mer2=false;
+                                                break;
+                                            case 3:
+                                                self.mer3=false;
+                                                break;
+                                            case 4:
+                                                self.mer4=false;
+                                                break;
+                                        }
+                                        break;
+                                    case "GIO":
+                                        switch (slotRip){
+                                            case 1:
+                                                self.gio1=false;
+                                                break;
+                                            case 2:
+                                                self.gio2=false;
+                                                break;
+                                            case 3:
+                                                self.gio3=false;
+                                                break;
+                                            case 4:
+                                                self.gio4=false;
+                                                break;
+                                        }
+                                        break;
+                                    case "VEN":
+                                        switch (slotRip){
+                                            case 1:
+                                                self.ven1=false;
+                                                break;
+                                            case 2:
+                                                self.ven2=false;
+                                                break;
+                                            case 3:
+                                                self.ven3=false;
+                                                break;
+                                            case 4:
+                                                self.ven4=false;
+                                                break;
+                                        }
+                                        break;
+                                }
+                                counter++;
+                            }
+                            /*Visualizzo la sezione che mi permette di selezionare le caselle per la prenotazione*/
+                            self.boolChoosedACDforPrenotazione=true;
+                        }
+
+
+                    });
+
+
+                },
+                /**Handler Btn "Inserisci la prenotazione indicata"*/
+                commitEffettuaPrenotazioni:function(){
+                    var self = this;
+                    /*Se la casella è visibile, ovvero è prenotabile, verifico il suo stato, ovvero se sia stata crocettata
+                    * */
+                    if(self.lun1==true){var lun1 = document.getElementById("idlun1").checked;}
+                    if(self.lun2==true){var lun2 = document.getElementById("idlun2").checked;}
+                    if(self.lun3==true){var lun3 = document.getElementById("idlun3").checked;}
+                    if(self.lun4==true){var lun4 = document.getElementById("idlun4").checked;}
+                    if(self.mar1==true){var mar1 = document.getElementById("idmar1").checked;}
+                    if(self.mar2==true){var mar2 = document.getElementById("idmar2").checked;}
+                    if(self.mar3==true){var mar3 = document.getElementById("idmar3").checked;}
+                    if(self.mar4==true){var mar4 = document.getElementById("idmar4").checked;}
+                    if(self.mer1==true){var mer1 = document.getElementById("idmer1").checked;}
+                    if(self.mer2==true){var mer2 = document.getElementById("idmer2").checked;}
+                    if(self.mer3==true){var mer3 = document.getElementById("idmer3").checked;}
+                    if(self.mer4==true){var mer4 = document.getElementById("idmer4").checked;}
+                    if(self.gio1==true){var gio1 = document.getElementById("idgio1").checked;}
+                    if(self.gio2==true){var gio2 = document.getElementById("idgio2").checked;}
+                    if(self.gio3==true){var gio3 = document.getElementById("idgio3").checked;}
+                    if(self.gio4==true){var gio4 = document.getElementById("idgio4").checked;}
+                    if(self.ven1==true){var ven1 = document.getElementById("idven1").checked;}
+                    if(self.ven2==true){var ven2 = document.getElementById("idven2").checked;}
+                    if(self.ven3==true){var ven3 = document.getElementById("idven3").checked;}
+                    if(self.ven4==true){var ven4 = document.getElementById("idven4").checked;}
+
+                    var ret = '';
+                    var count=0;
+
+                    /*Se è stata crocettata (quindi le variabili che ho impostato sopra sono true) allora valorizzo il
+                    * msg da mandare alla servlet*/
+                    if(lun1==true){ret = ret.concat("LUN-1;");count++}
+                    if(lun2==true){ret = ret.concat("LUN-2;");count++}
+                    if(lun3==true){ret = ret.concat("LUN-3;");count++}
+                    if(lun4==true){ret = ret.concat("LUN-4;");count++}
+                    if(mar1==true){ret = ret.concat("MAR-1;");count++}
+                    if(mar2==true){ret = ret.concat("MAR-2;");count++}
+                    if(mar3==true){ret = ret.concat("MAR-3;");count++}
+                    if(mar4==true){ret = ret.concat("MAR-4;");count++}
+                    if(mer1==true){ret = ret.concat("MER-1;");count++}
+                    if(mer2==true){ret = ret.concat("MER-2;");count++}
+                    if(mer3==true){ret = ret.concat("MER-3;");count++}
+                    if(mer4==true){ret = ret.concat("MER-4;");count++}
+                    if(gio1==true){ret = ret.concat("GIO-1;");count++}
+                    if(gio2==true){ret = ret.concat("GIO-2;");count++}
+                    if(gio3==true){ret = ret.concat("GIO-3;");count++}
+                    if(gio4==true){ret = ret.concat("GIO-4;");count++}
+                    if(ven1==true){ret = ret.concat("VEN-1;");count++}
+                    if(ven2==true){ret = ret.concat("VEN-2;");count++}
+                    if(ven3==true){ret = ret.concat("VEN-3;");count++}
+                    if(ven4==true){ret = ret.concat("VEN-4;");count++}
+
+                    var e = document.getElementById("selectionACDforPrenotazione");
+                    var ACDperPrenotazione = e.value;
+
+
+                    /*Mando alla servlet le richieste della prenotazione, un numOccorrenze che indica quanti slot ho selezionato
+                    * da prenotare e la ACD ovvero l'associazione corso-docente per cui sto prenotando,
+                    * in data ci sarà un msg di avvenuta prenotazione oppure un messaggio di errore*/
+                    $.post(this.link, {action: 'postPrenota', prenotazioniRichieste: ret, occorrenze: count, ACDperPrenotazione : ACDperPrenotazione, sessionID : self.sessionID}, function(data) {
+                        if(data==="sessionFail"){
+                            alert("Sessione scaduta, effettuare nuovamente il Login.");
+                        }else{
+                            self.info=data;
+                        }
+                    });
+
+
+                    /*Se la casella era visibile, ed era stata crocettata, dopo la prenotazione non la visualizzo più*/
+                    if(lun1==true){var lun1 = document.getElementById("idlun1").checked=false; self.lun1=false;}
+                    if(lun2==true){var lun2 = document.getElementById("idlun2").checked=false; self.lun2=false;}
+                    if(lun3==true){var lun3 = document.getElementById("idlun3").checked=false; self.lun3=false;}
+                    if(lun4==true){var lun4 = document.getElementById("idlun4").checked=false; self.lun4=false;}
+                    if(mar1==true){var mar1 = document.getElementById("idmar1").checked=false; self.mar1=false;}
+                    if(mar2==true){var mar2 = document.getElementById("idmar2").checked=false; self.mar2=false;}
+                    if(mar3==true){var mar3 = document.getElementById("idmar3").checked=false; self.mar3=false;}
+                    if(mar4==true){var mar4 = document.getElementById("idmar4").checked=false; self.mar4=false;}
+                    if(mer1==true){var mer1 = document.getElementById("idmer1").checked=false; self.mer1=false;}
+                    if(mer2==true){var mer2 = document.getElementById("idmer2").checked=false; self.mer2=false;}
+                    if(mer3==true){var mer3 = document.getElementById("idmer3").checked=false; self.mer3=false;}
+                    if(mer4==true){var mer4 = document.getElementById("idmer4").checked=false; self.mer4=false;}
+                    if(gio1==true){var gio1 = document.getElementById("idgio1").checked=false; self.gio1=false;}
+                    if(gio2==true){var gio2 = document.getElementById("idgio2").checked=false; self.gio2=false;}
+                    if(gio3==true){var gio3 = document.getElementById("idgio3").checked=false; self.gio3=false;}
+                    if(gio4==true){var gio4 = document.getElementById("idgio4").checked=false; self.gio4=false;}
+                    if(ven1==true){var ven1 = document.getElementById("idven1").checked=false; self.ven1=false;}
+                    if(ven2==true){var ven2 = document.getElementById("idven2").checked=false; self.ven2=false;}
+                    if(ven3==true){var ven3 = document.getElementById("idven3").checked=false; self.ven3=false;}
+                    if(ven4==true){var ven4 = document.getElementById("idven4").checked=false; self.ven4=false;}
+
+                },
+                /**Handler Btn "Segna prenotazione come effettuata"*/
+                postSegnaPrenComeEffettuata:function(){
+                    var self = this;
+                    var e = document.getElementById("selectionSegnaPrenComeEffettuata");
+                    var idPrenToEffett = e.value;
+                    if(idPrenToEffett===''){
+                        idPrenToEffett=-1;
+                    }
+
+                    $.post(this.link, {action: 'postPrenEffettuata', idPren: idPrenToEffett, sessionID: self.sessionID}, function(data) {
+                        if(data==="sessionFail"){
+                            self.boolVisualizzaPrenotazioniPersonali=false;
+                            alert("Sessione scaduta, effettua nuovamente il Login");
+                        }else{
+                            self.info=data;
+                            self.leftVisualizzaPrenUsr();
+                        }
+
+                    });
+
+
+                },
+                /**Handler Btn "Segna prenotazione come disdetta"*/
+                postDisdiciPren:function(){
+                    var self = this;
+                    var e = document.getElementById("selectionDisdiciPren");
+                    var idPrenToDisd = e.value;
+                    if(idPrenToDisd===''){
+                        idPrenToDisd=-1;
+                    }
+
+                    $.post(this.link, {action: 'postDisdiciPren', idPren: idPrenToDisd, sessionID: self.sessionID}, function(data) {
+                        if(data==="sessionFail"){
+                            self.boolVisualizzaPrenotazioniPersonali=false;
+                            alert("Sessione scaduta, effettua nuovamente il Login");
+                        }else{
+                            self.info=data;
+                            self.leftVisualizzaPrenUsr();
+                        }
+                    });
+
+
+                }
+
+
+            }
+        });
+
+    </script>
+
+
+
+</body>
+
+</html>
