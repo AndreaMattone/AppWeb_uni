@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+
+    <TextView
+        android:id="@+id/id_tvPrenotazioniDisponibili"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Visualizza le prenotazioni disponibili"
+        android:textAlignment="center"
+        android:textAllCaps="false"
+        android:textColor="#FF0000"
+        android:textSize="18sp"
+        android:textStyle="bold" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="3dp"
+        android:background="#009688"
+        android:orientation="horizontal"></LinearLayout>
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="351dp"
+        android:layout_height="43dp"
+        android:layout_margin="7dp"
+        android:text="Scegli il corso ed il docente di cui vuoi prenotare la ripetizione"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+    <Spinner
+        android:id="@+id/id_mySpinner"
+        android:layout_width="252dp"
+        android:layout_height="61dp"
+        android:layout_margin="7dp" />
+
+    <Button
+        android:id="@+id/id_btnChoosedACD"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="7dp"
+        android:text="OK" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="400dp"
+        android:layout_marginTop="15dp">
+
+        <LinearLayout
+            android:id="@+id/linearLayout"
+            android:layout_width="match_parent"
+            android:layout_height="3dp"
+            android:background="#009688"
+            android:orientation="horizontal"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.0"
+            tools:layout_editor_absoluteX="16dp"></LinearLayout>
+
+        <TextView
+            android:id="@+id/id_tvPrenotazioniDisponibili2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Effettua la prenotazione"
+            android:textAlignment="center"
+            android:textAllCaps="false"
+            android:textColor="#FF0000"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            tools:ignore="MissingConstraints" />
+
+        <TextView
+            android:id="@+id/id_textViewStaiPrenotandoPer"
+            android:layout_width="313dp"
+            android:layout_height="70dp"
+            android:layout_marginVertical="3dp"
+            android:text="Stai prenotando per ..."
+            android:textAlignment="center"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.103" />
+
+        <Spinner
+            android:id="@+id/id_spinnerPrenotazione"
+            android:layout_width="313dp"
+            android:layout_height="56dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/id_tvPrenotazioniDisponibili2"
+            app:layout_constraintVertical_bias="0.331" />
+
+        <Button
+            android:id="@+id/id_btnPrenota"
+            android:layout_width="313dp"
+            android:layout_height="wrap_content"
+            android:text="Prenota"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+</LinearLayout>

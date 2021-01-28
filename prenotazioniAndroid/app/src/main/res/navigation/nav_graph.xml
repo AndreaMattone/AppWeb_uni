@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/FirstFragment">
+
+
+    <!--LOGIN FRAGMENT -->
+    <fragment
+        android:id="@+id/FirstFragment"
+        android:name="com.example.prenotazioniandroid.FirstFragment"
+        android:label="@string/first_fragment_label"
+        tools:layout="@layout/fragment_first">
+
+        <action
+            android:id="@+id/action_FirstFragment_to_SecondFragment"
+            app:destination="@id/SecondFragment" />
+        <action
+            android:id="@+id/action_FirstFragment_to_guestFragment"
+            app:destination="@id/GuestFragment" />
+
+    </fragment>
+
+
+    <!--SECOND FRAGMENT -->
+    <fragment
+        android:id="@+id/SecondFragment"
+        android:name="com.example.prenotazioniandroid.SecondFragment"
+        android:label="@string/second_fragment_label"
+        tools:layout="@layout/fragment_second">
+
+        <action
+            android:id="@+id/action_SecondFragment_to_FirstFragment"
+            app:destination="@id/FirstFragment" />
+        <action
+            android:id="@+id/action_SecondFragment_to_MiePrenotazioniAttiveFragment"
+            app:destination="@id/MiePrenotazioniAttiveFragment" />
+        <action
+            android:id="@+id/action_SecondFragment_to_MiePrenotazioniEffettuateFragment"
+            app:destination="@id/MiePrenotazioniEffettuateFragment" />
+        <action
+            android:id="@+id/action_SecondFragment_to_MiePrenotazioniDisdetteFragment"
+            app:destination="@id/MiePrenotazioniDisdetteFragment" />
+        <action
+            android:id="@+id/action_SecondFragment_to_PrenotazioniDisponibiliFragment"
+            app:destination="@id/PrenotazioniDisponibiliFragment" />
+
+
+    </fragment>
+
+
+
+    <!--MIE PRENOTAZIONI ATTIVE FRAGMENT -->
+    <fragment
+        android:id="@+id/MiePrenotazioniAttiveFragment"
+        android:name="com.example.prenotazioniandroid.MiePrenotazioniAttiveFragment"
+        tools:layout="@layout/fragment_mie_prenotazioni_attive">
+    </fragment>
+
+    <!--MIE PRENOTAZIONI EFFETTUATE FRAGMENT -->
+    <fragment
+        android:id="@+id/MiePrenotazioniEffettuateFragment"
+        android:name="com.example.prenotazioniandroid.MiePrenotazioniEffettuateFragment"
+        tools:layout="@layout/fragment_mie_prenotazioni_effettuate">
+    </fragment>
+
+    <!--MIE PRENOTAZIONI DISDETTE FRAGMENT -->
+    <fragment
+        android:id="@+id/MiePrenotazioniDisdetteFragment"
+        android:name="com.example.prenotazioniandroid.MiePrenotazioniDisdetteFragment"
+        tools:layout="@layout/fragment_mie_prenotazioni_disdette">
+    </fragment>
+
+
+
+
+
+
+
+
+
+    <!--PRENOTAZIONI DISPONIBILI FRAGMENT -->
+    <fragment
+        android:id="@+id/PrenotazioniDisponibiliFragment"
+        android:name="com.example.prenotazioniandroid.PrenotazioniDisponibiliFragment"
+        tools:layout="@layout/fragment_prenotazioni_disponibili">
+    </fragment>
+
+    <!--GUEST FRAGMENT -->
+    <fragment
+        android:id="@+id/GuestFragment"
+        android:name="com.example.prenotazioniandroid.guestPanelFragment"
+        tools:layout="@layout/fragment_guest_panel">
+    </fragment>
+
+
+
+</navigation>
